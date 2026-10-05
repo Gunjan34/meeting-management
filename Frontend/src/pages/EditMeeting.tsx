@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { useEffect } from "react";
 import api from "../api/api";
 import type { Meeting } from "../types";
 
