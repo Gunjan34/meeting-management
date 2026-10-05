@@ -6,53 +6,124 @@ interface Props {
   onDelete: (id: number) => void;
 }
 
-const MeetingCard = ({ meeting, onEdit, onDelete }: Props) => {
+const MeetingCard = ({
+  meeting,
+  onEdit,
+  onDelete,
+}: Props) => {
+
+  const formattedDate = new Date(
+    meeting.meeting_date
+  ).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
-    <div className="meeting-card">
+    <article className="meeting-card">
 
-      <h3>{meeting.title}</h3>
+      <div className="meeting-card-header">
 
-      <p>
-        <strong>Description:</strong>{" "}
-        {meeting.description || "No description"}
+        <div className="meeting-calendar">
+          <span>📅</span>
+        </div>
+
+        <div className="meeting-title-wrapper">
+          <h3>{meeting.title}</h3>
+
+          <span className="meeting-status">
+            Scheduled
+          </span>
+        </div>
+
+      </div>
+
+      <p className="meeting-description">
+        {meeting.description ||
+          "No description provided."}
       </p>
 
-      <p>
-        <strong>Date:</strong>{" "}
-        {meeting.meeting_date}
-      </p>
+      <div className="meeting-details">
 
-      <p>
-        <strong>Time:</strong>{" "}
-        {meeting.start_time} - {meeting.end_time}
-      </p>
+        <div className="meeting-detail">
+          <span className="detail-icon">📅</span>
 
-      <p>
-        <strong>Location:</strong>{" "}
-        {meeting.location || "Not specified"}
-      </p>
+          <div>
+            <small>Date</small>
+            <strong>{formattedDate}</strong>
+          </div>
+        </div>
+
+        <div className="meeting-detail">
+          <span className="detail-icon">🕐</span>
+
+          <div>
+            <small>Time</small>
+            <strong>
+              {meeting.start_time.slice(0, 5)}
+              {" - "}
+              {meeting.end_time.slice(0, 5)}
+            </strong>
+          </div>
+        </div>
+
+        <div className="meeting-detail">
+          <span className="detail-icon">📍</span>
+
+          <div>
+            <small>Location</small>
+            <strong>
+              {meeting.location ||
+                "Not specified"}
+            </strong>
+          </div>
+        </div>
+
+      </div>
 
       {meeting.created_by_name && (
-        <p>
-          <strong>Created by:</strong>{" "}
-          {meeting.created_by_name}
-        </p>
+        <div className="meeting-created-by">
+
+          <div className="user-avatar">
+            {meeting.created_by_name
+              .charAt(0)
+              .toUpperCase()}
+          </div>
+
+          <div>
+            <small>Created by</small>
+            <strong>
+              {meeting.created_by_name}
+            </strong>
+          </div>
+
+        </div>
       )}
 
       <div className="meeting-actions">
-        <button onClick={() => onEdit(meeting.id)}>
+
+        <button
+          className="edit-button"
+          onClick={() =>
+            onEdit(meeting.id)
+          }
+        >
           Edit
         </button>
 
         <button
           className="delete-button"
-          onClick={() => onDelete(meeting.id)}
+          onClick={() =>
+            onDelete(meeting.id)
+          }
         >
           Delete
         </button>
+
       </div>
 
-    </div>
+    </article>
   );
 };
 

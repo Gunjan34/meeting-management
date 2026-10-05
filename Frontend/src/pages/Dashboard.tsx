@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api from "../api/api";
@@ -12,19 +12,19 @@ const Dashboard = () => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   const fetchMeetings = async () => {
     try {
       setLoading(true);
+      setError("");
 
       const response = await api.get("/meetings");
-
       setMeetings(response.data.data);
-
     } catch (error: any) {
       setError(
         error.response?.data?.message ||
-        "Failed to fetch meetings"
+          "Failed to fetch meetings"
       );
     } finally {
       setLoading(false);
@@ -48,11 +48,10 @@ const Dashboard = () => {
       setMeetings((prev) =>
         prev.filter((meeting) => meeting.id !== id)
       );
-
     } catch (error: any) {
       alert(
         error.response?.data?.message ||
-        "Failed to delete meeting"
+          "Failed to delete meeting"
       );
     }
   };
@@ -61,62 +60,208 @@ const Dashboard = () => {
     navigate(`/meetings/edit/${id}`);
   };
 
+  const filteredMeetings = useMemo(() => {
+    const searchText = search.toLowerCase().trim();
+
+    if (!searchText) return meetings;
+
+    return meetings.filter((meeting) =>
+      [
+        meeting.title,
+        meeting.description,
+        meeting.location,
+        meeting.created_by_name,
+      ]
+        .filter(Boolean)
+        .some((value) =>
+          String(value).toLowerCase().includes(searchText)
+        )
+    );
+  }, [meetings, search]);
+
+  const upcomingMeetings = meetings.filter(
+    (meeting) =>
+      new Date(meeting.meeting_date) >= new Date()
+  ).length;
+
+  const todayMeetings = meetings.filter(
+    (meeting) => {
+      const meetingDate = new Date(meeting.meeting_date);
+      const today = new Date();
+
+      return (
+        meetingDate.getFullYear() === today.getFullYear() &&
+        meetingDate.getMonth() === today.getMonth() &&
+        meetingDate.getDate() === today.getDate()
+      );
+    }
+  ).length;
+
   return (
     <>
       <Navbar />
 
       <main className="dashboard">
 
-        <div className="dashboard-header">
+        {/* Welcome Header */}
+        <section className="dashboard-header">
 
           <div>
+            <p className="dashboard-label">
+              MEETING MANAGEMENT
+            </p>
+
             <h1>Meetings</h1>
-            <p>Manage your meetings</p>
+
+            <p className="dashboard-subtitle">
+              Manage and organize your meetings in one place.
+            </p>
           </div>
 
           <button
+            className="primary-button"
             onClick={() =>
               navigate("/meetings/create")
             }
           >
-            + Create Meeting
+            <span>+</span>
+            Create Meeting
           </button>
 
-        </div>
+        </section>
 
+        {/* Statistics */}
+        <section className="stats-grid">
+
+          <div className="stat-card">
+            <div className="stat-icon">📅</div>
+
+            <div>
+              <p>Total Meetings</p>
+              <h2>{meetings.length}</h2>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">🕐</div>
+
+            <div>
+              <p>Upcoming</p>
+              <h2>{upcomingMeetings}</h2>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">⭐</div>
+
+            <div>
+              <p>Today</p>
+              <h2>{todayMeetings}</h2>
+            </div>
+          </div>
+
+        </section>
+
+        {/* Search */}
+        <section className="meetings-toolbar">
+
+          <div>
+            <h2>All Meetings</h2>
+            <p>
+              {filteredMeetings.length} meeting
+              {filteredMeetings.length !== 1
+                ? "s"
+                : ""}
+            </p>
+          </div>
+
+          <div className="search-box">
+            <span>🔍</span>
+
+            <input
+              type="text"
+              placeholder="Search meetings..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+            />
+          </div>
+
+        </section>
+
+        {/* Loading */}
         {loading && (
-          <p>Loading meetings...</p>
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading meetings...</p>
+          </div>
         )}
 
+        {/* Error */}
         {error && (
-          <p className="error">
-            {error}
-          </p>
+          <div className="error-state">
+            <p>{error}</p>
+
+            <button onClick={fetchMeetings}>
+              Try Again
+            </button>
+          </div>
         )}
 
+        {/* Empty */}
         {!loading &&
           !error &&
-          meetings.length === 0 && (
+          filteredMeetings.length === 0 && (
             <div className="empty-state">
-              <h3>No meetings found</h3>
+
+              <div className="empty-icon">
+                📅
+              </div>
+
+              <h3>
+                {search
+                  ? "No meetings found"
+                  : "No meetings yet"}
+              </h3>
+
               <p>
-                Create your first meeting.
+                {search
+                  ? "Try searching with a different keyword."
+                  : "Create your first meeting to get started."}
               </p>
+
+              {!search && (
+                <button
+                  className="primary-button"
+                  onClick={() =>
+                    navigate("/meetings/create")
+                  }
+                >
+                  + Create Meeting
+                </button>
+              )}
+
             </div>
           )}
 
-        <div className="meeting-grid">
+        {/* Meetings */}
+        {!loading &&
+          !error &&
+          filteredMeetings.length > 0 && (
+            <div className="meeting-grid">
 
-          {meetings.map((meeting) => (
-            <MeetingCard
-              key={meeting.id}
-              meeting={meeting}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+              {filteredMeetings.map((meeting) => (
+                <MeetingCard
+                  key={meeting.id}
+                  meeting={meeting}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
 
-        </div>
+            </div>
+          )}
 
       </main>
     </>
