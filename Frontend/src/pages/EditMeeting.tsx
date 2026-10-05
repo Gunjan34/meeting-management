@@ -31,14 +31,14 @@ const EditMeeting = () => {
 
         const meeting = response.data.data;
 
-        setForm({
-          title: meeting.title,
-          description: meeting.description || "",
-          meeting_date: meeting.meeting_date,
-          start_time: meeting.start_time.slice(0, 5),
-          end_time: meeting.end_time.slice(0, 5),
-          location: meeting.location || "",
-        });
+      setForm({
+  title: meeting.title,
+  description: meeting.description || "",
+  meeting_date: meeting.meeting_date.slice(0, 10),
+  start_time: meeting.start_time.slice(0, 5),
+  end_time: meeting.end_time.slice(0, 5),
+  location: meeting.location || "",
+});
 
       } catch (error: any) {
         setError(
