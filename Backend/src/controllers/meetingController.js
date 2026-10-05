@@ -175,33 +175,74 @@ const createMeeting = async (req, res) => {
     }
 
     // Get logged-in user's ID from JWT
-    const created_by = req.user.id;
+    // const created_by = req.user.id;
 
-    const result = await pool.query(
-      `
-      INSERT INTO meetings
-      (
-        title,
-        description,
-        meeting_date,
-        start_time,
-        end_time,
-        location,
-        created_by
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *
-      `,
-      [
-        title,          // $1
-        description || null, // $2
-        meeting_date,   // $3
-        start_time,     // $4
-        end_time,       // $5
-        location || null, // $6
-        created_by      // $7
-      ]
-    );
+
+
+    // const result = await pool.query(
+    //   `
+    //   INSERT INTO meetings
+    //   (
+    //     title,
+    //     description,
+    //     meeting_date,
+    //     start_time,
+    //     end_time,
+    //     location,
+    //     created_by
+    //   )
+    //   VALUES ($1, $2, $3, $4, $5, $6, $7)
+    //   RETURNING *
+    //   `,
+    //   [
+    //     title,          // $1
+    //     description || null, // $2
+    //     meeting_date,   // $3
+    //     start_time,     // $4
+    //     end_time,       // $5
+    //     location || null, // $6
+    //     created_by      // $7
+    //   ]
+    // );
+
+    // Get logged-in user's ID from JWT
+const created_by = req.user.id;
+
+console.log("JWT USER:", req.user);
+console.log("CREATED BY:", created_by);
+
+const checkUser = await pool.query(
+  "SELECT id, name, email FROM users WHERE id = $1",
+  [created_by]
+);
+
+console.log("USER IN DATABASE:", checkUser.rows);
+
+const result = await pool.query(
+  `
+  INSERT INTO meetings
+  (
+    title,
+    description,
+    meeting_date,
+    start_time,
+    end_time,
+    location,
+    created_by
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  RETURNING *
+  `,
+  [
+    title,
+    description || null,
+    meeting_date,
+    start_time,
+    end_time,
+    location || null,
+    created_by
+  ]
+);
 
     res.status(201).json({
       success: true,
