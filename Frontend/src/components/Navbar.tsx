@@ -3,9 +3,17 @@ import { useNavigate } from "react-router-dom";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = JSON.parse(
+    localStorage.getItem("user") || "null"
+  );
 
   const handleLogout = () => {
+    const confirmLogout = window.confirm(
+      "Are you sure you want to logout?"
+    );
+
+    if (!confirmLogout) return;
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -14,17 +22,26 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
+
       <h2>Meeting Management</h2>
 
       <div className="navbar-right">
-        {user && <span>Welcome, {user.name}</span>}
+
+        {user && (
+          <span>
+            Welcome, {user.name}
+          </span>
+        )}
 
         <button onClick={handleLogout}>
           Logout
         </button>
+
       </div>
+
     </nav>
   );
 };
 
 export default Navbar;
+

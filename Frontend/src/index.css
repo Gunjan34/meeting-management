@@ -94,6 +94,44 @@ button:disabled {
   margin-bottom: 10px;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field > input {
+  padding-right: 46px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #6b7280;
+}
+
+.password-toggle:hover {
+  background: #f3f4f6;
+  opacity: 1;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Inputs */
 
 input,
