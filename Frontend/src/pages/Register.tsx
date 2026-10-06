@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,10 +14,73 @@ const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>_\-]/.test(password),
+    };
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     setError("");
+
+    // Name validation
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+
+    // Email validation
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Password validation
+    const passwordRules = validatePassword(password);
+
+    if (!passwordRules.length) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    if (!passwordRules.uppercase) {
+      setError(
+        "Password must contain at least one uppercase letter"
+      );
+      return;
+    }
+
+    if (!passwordRules.lowercase) {
+      setError(
+        "Password must contain at least one lowercase letter"
+      );
+      return;
+    }
+
+    if (!passwordRules.number) {
+      setError(
+        "Password must contain at least one number"
+      );
+      return;
+    }
+
+    if (!passwordRules.special) {
+      setError(
+        "Password must contain at least one special character"
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -30,7 +94,6 @@ const Register = () => {
       alert("Registration successful!");
 
       navigate("/login");
-
     } catch (error: any) {
       setError(
         error.response?.data?.message ||
@@ -41,14 +104,14 @@ const Register = () => {
     }
   };
 
+  const passwordRules = validatePassword(password);
+
   return (
     <div className="auth-container">
-
       <form
         className="auth-form"
         onSubmit={handleSubmit}
       >
-
         <h1>Create Account</h1>
 
         {error && (
@@ -61,28 +124,75 @@ const Register = () => {
           type="text"
           placeholder="Name"
           value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
+          onChange={(e) => setName(e.target.value)}
+          required
         />
 
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
+
+        {password && (
+          <div className="password-rules">
+            <p>Password must contain:</p>
+
+            <p className={passwordRules.length ? "valid" : "invalid"}>
+              {passwordRules.length ? "✓" : "✗"} At least 8 characters
+            </p>
+
+            <p
+              className={
+                passwordRules.uppercase
+                  ? "valid"
+                  : "invalid"
+              }
+            >
+              {passwordRules.uppercase ? "✓" : "✗"} One uppercase letter
+            </p>
+
+            <p
+              className={
+                passwordRules.lowercase
+                  ? "valid"
+                  : "invalid"
+              }
+            >
+              {passwordRules.lowercase ? "✓" : "✗"} One lowercase letter
+            </p>
+
+            <p
+              className={
+                passwordRules.number
+                  ? "valid"
+                  : "invalid"
+              }
+            >
+              {passwordRules.number ? "✓" : "✗"} One number
+            </p>
+
+            <p
+              className={
+                passwordRules.special
+                  ? "valid"
+                  : "invalid"
+              }
+            >
+              {passwordRules.special ? "✓" : "✗"} One special character
+            </p>
+          </div>
+        )}
 
         <button
           type="submit"
@@ -99,11 +209,10 @@ const Register = () => {
             Login
           </Link>
         </p>
-
       </form>
-
     </div>
   );
 };
 
 export default Register;
+
