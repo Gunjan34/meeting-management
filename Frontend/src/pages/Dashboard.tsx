@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [locationFilter, setLocationFilter] = useState("all");
 
   const fetchMeetings = async () => {
     try {
@@ -20,6 +21,7 @@ const Dashboard = () => {
       setError("");
 
       const response = await api.get("/meetings");
+
       setMeetings(response.data.data);
     } catch (error: any) {
       setError(
@@ -60,24 +62,44 @@ const Dashboard = () => {
     navigate(`/meetings/edit/${id}`);
   };
 
+  // Get unique locations from meetings
+  const locations = useMemo(() => {
+    return Array.from(
+      new Set(
+        meetings
+          .map((meeting) => meeting.location?.trim())
+          .filter(Boolean)
+      )
+    );
+  }, [meetings]);
+
+  // Search + Location filtering
   const filteredMeetings = useMemo(() => {
     const searchText = search.toLowerCase().trim();
 
-    if (!searchText) return meetings;
+    return meetings.filter((meeting) => {
+      const matchesSearch =
+        !searchText ||
+        [
+          meeting.title,
+          meeting.description,
+          meeting.location,
+          meeting.created_by_name,
+        ]
+          .filter(Boolean)
+          .some((value) =>
+            String(value)
+              .toLowerCase()
+              .includes(searchText)
+          );
 
-    return meetings.filter((meeting) =>
-      [
-        meeting.title,
-        meeting.description,
-        meeting.location,
-        meeting.created_by_name,
-      ]
-        .filter(Boolean)
-        .some((value) =>
-          String(value).toLowerCase().includes(searchText)
-        )
-    );
-  }, [meetings, search]);
+      const matchesLocation =
+        locationFilter === "all" ||
+        meeting.location?.trim() === locationFilter;
+
+      return matchesSearch && matchesLocation;
+    });
+  }, [meetings, search, locationFilter]);
 
   const upcomingMeetings = meetings.filter(
     (meeting) =>
@@ -86,13 +108,19 @@ const Dashboard = () => {
 
   const todayMeetings = meetings.filter(
     (meeting) => {
-      const meetingDate = new Date(meeting.meeting_date);
+      const meetingDate = new Date(
+        meeting.meeting_date
+      );
+
       const today = new Date();
 
       return (
-        meetingDate.getFullYear() === today.getFullYear() &&
-        meetingDate.getMonth() === today.getMonth() &&
-        meetingDate.getDate() === today.getDate()
+        meetingDate.getFullYear() ===
+          today.getFullYear() &&
+        meetingDate.getMonth() ===
+          today.getMonth() &&
+        meetingDate.getDate() ===
+          today.getDate()
       );
     }
   ).length;
@@ -162,11 +190,12 @@ const Dashboard = () => {
 
         </section>
 
-        {/* Search */}
+        {/* Search and Location Filter */}
         <section className="meetings-toolbar">
 
           <div>
             <h2>All Meetings</h2>
+
             <p>
               {filteredMeetings.length} meeting
               {filteredMeetings.length !== 1
@@ -175,17 +204,44 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="search-box">
-            <span>🔍</span>
+          <div className="toolbar-filters">
 
-            <input
-              type="text"
-              placeholder="Search meetings..."
-              value={search}
+            {/* Search */}
+            <div className="search-box">
+              <span>🔍</span>
+
+              <input
+                type="text"
+                placeholder="Search meetings..."
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+              />
+            </div>
+
+            {/* Location Filter */}
+            <select
+              className="location-filter"
+              value={locationFilter}
               onChange={(e) =>
-                setSearch(e.target.value)
+                setLocationFilter(e.target.value)
               }
-            />
+            >
+              <option value="all">
+                📍 All Locations
+              </option>
+
+              {locations.map((location) => (
+                <option
+                  key={location}
+                  value={location}
+                >
+                  {location}
+                </option>
+              ))}
+            </select>
+
           </div>
 
         </section>
@@ -194,6 +250,7 @@ const Dashboard = () => {
         {loading && (
           <div className="loading-state">
             <div className="spinner"></div>
+
             <p>Loading meetings...</p>
           </div>
         )}
@@ -201,11 +258,13 @@ const Dashboard = () => {
         {/* Error */}
         {error && (
           <div className="error-state">
+
             <p>{error}</p>
 
             <button onClick={fetchMeetings}>
               Try Again
             </button>
+
           </div>
         )}
 
@@ -213,6 +272,7 @@ const Dashboard = () => {
         {!loading &&
           !error &&
           filteredMeetings.length === 0 && (
+
             <div className="empty-state">
 
               <div className="empty-icon">
@@ -220,27 +280,28 @@ const Dashboard = () => {
               </div>
 
               <h3>
-                {search
+                {search || locationFilter !== "all"
                   ? "No meetings found"
                   : "No meetings yet"}
               </h3>
 
               <p>
-                {search
-                  ? "Try searching with a different keyword."
+                {search || locationFilter !== "all"
+                  ? "Try changing your search or location filter."
                   : "Create your first meeting to get started."}
               </p>
 
-              {!search && (
-                <button
-                  className="primary-button"
-                  onClick={() =>
-                    navigate("/meetings/create")
-                  }
-                >
-                  + Create Meeting
-                </button>
-              )}
+              {!search &&
+                locationFilter === "all" && (
+                  <button
+                    className="primary-button"
+                    onClick={() =>
+                      navigate("/meetings/create")
+                    }
+                  >
+                    + Create Meeting
+                  </button>
+                )}
 
             </div>
           )}
@@ -249,6 +310,7 @@ const Dashboard = () => {
         {!loading &&
           !error &&
           filteredMeetings.length > 0 && (
+
             <div className="meeting-grid">
 
               {filteredMeetings.map((meeting) => (

@@ -21,7 +21,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -111,8 +112,7 @@ button {
 
 .stats-grid {
   display: grid;
-  grid-template-columns:
-    repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 
   gap: 20px;
   margin-bottom: 40px;
@@ -181,8 +181,19 @@ button {
   font-size: 13px;
 }
 
+/* =========================
+   SEARCH + FILTER
+========================= */
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .search-box {
   width: 280px;
+  height: 42px;
 
   display: flex;
   align-items: center;
@@ -193,6 +204,10 @@ button {
   border-radius: 10px;
 
   padding: 10px 13px;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .search-box span {
@@ -210,6 +225,44 @@ button {
 
 .search-box:focus-within {
   border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* =========================
+   LOCATION FILTER
+========================= */
+
+.location-filter {
+  width: 280px;
+  height: 42px;
+
+  padding: 10px 13px;
+
+  border: 1px solid #dfe3eb;
+  border-radius: 10px;
+
+  background: white;
+  color: #374151;
+
+  font-size: 14px;
+
+  outline: none;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.location-filter:hover {
+  border-color: #c7cad4;
+}
+
+.location-filter:focus {
+  border-color: #6366f1;
+
   box-shadow:
     0 0 0 3px rgba(99, 102, 241, 0.1);
 }
@@ -220,8 +273,7 @@ button {
 
 .meeting-grid {
   display: grid;
-  grid-template-columns:
-    repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 
   gap: 20px;
 }
@@ -547,7 +599,6 @@ button {
 ========================= */
 
 @media (max-width: 800px) {
-
   .dashboard {
     padding: 30px 18px;
   }
@@ -570,13 +621,18 @@ button {
     flex-direction: column;
   }
 
-  .search-box {
+  .toolbar-filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .search-box,
+  .location-filter {
     width: 100%;
   }
 }
 
 @media (max-width: 500px) {
-
   .dashboard-header h1 {
     font-size: 28px;
   }
